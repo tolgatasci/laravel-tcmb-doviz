@@ -11,9 +11,14 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider {
 
 	public function boot()
 	{
-		$this->package('wisemood/laravel-tcmb-doviz');
+        // publish migration
+        $this->publishes([
+            __DIR__.'/../../migrations/' => database_path('migrations')
+        ], 'migrations');
+
+
 		$this->commands([
-			'Wisemood\LaravelTcmbDoviz\DovizGetCommand'
+           DovizGetCommand::class
 		]);
 	}
 

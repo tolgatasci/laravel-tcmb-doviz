@@ -9,13 +9,14 @@
 	],
 	"require": {
 		"php": ">=5.4.0",
-		"illuminate/support": "10.*"
 	},
 	"autoload": {
 		"classmap": [
 			"src/migrations",
 			"src/commands",
-			"src/models"
+			"src/models",
+			"src/base",
+            "src/base"
 		],
 		"psr-0": {
 			"Wisemood\\LaravelTcmbDoviz": "src/"

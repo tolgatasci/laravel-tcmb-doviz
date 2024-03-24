@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateDoviz extends Migration {
 
-   const TABLE = 'doviz';
+   const TABLE = 'dolar_rates';
 
    /**
     * Run the migrations.
@@ -14,12 +14,13 @@ class CreateDoviz extends Migration {
     */
    public function up()
    {
-      Schema::create('doviz', function (Blueprint $table) {
+      Schema::create('dolar_rates', function (Blueprint $table) {
          $table->increments('id');
-         $table->date('tarih')->index();
-         $table->decimal('dolar', 10, 6);
-         $table->decimal('euro', 10, 6);
-         $table->decimal('parite', 10, 6);
+		 $table->string('name');
+		 $table->string('name');
+         $table->decimal('BanknoteBuying', 10, 6);
+         $table->decimal('BanknoteSelling', 10, 6);
+		 $table->date('date_')->index();
          $table->timestamps();
       });
    }
@@ -31,7 +32,7 @@ class CreateDoviz extends Migration {
     */
    public function down()
    {
-      Schema::drop(self::TABLE);
+      Schema::drop("dolar_rates");
    }
 
 }

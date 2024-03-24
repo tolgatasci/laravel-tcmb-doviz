@@ -16,11 +16,10 @@ class CreateDoviz extends Migration {
    {
       Schema::create('dolar_rates', function (Blueprint $table) {
          $table->increments('id');
-		 $table->string('name');
-		 $table->string('name');
+	 $table->string('name');
          $table->decimal('BanknoteBuying', 10, 6);
          $table->decimal('BanknoteSelling', 10, 6);
-		 $table->date('date_')->index();
+	 $table->date('date_')->index();
          $table->timestamps();
       });
    }

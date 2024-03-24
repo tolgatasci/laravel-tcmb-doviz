@@ -1,57 +1,30 @@
 <?php namespace Wisemood\LaravelTcmbDoviz;
-
+use Wisemood\LaravelTcmbDoviz\Kur;
 class Doviz extends \Eloquent {
 
-   protected $table = 'doviz';
+   protected $table = 'dolar_rates';
    public $timestamps = true;
 
-   public static function sonKur()
+    protected $fillable = [
+        'name',
+        'code',
+        'BanknoteBuying',
+        'BanknoteSelling',
+        'date_', // tarih
+    ];
+
+
+
+   public static function enYakinKur($tarih = null,$currency = null)
    {
-      if ($data = Doviz::orderBy('tarih', 'desc')->first()) {
-         return $data;
-      }
+        if (empty($tarih)) {
+            $tarih = date("Y-m-d");
 
-      $model = __NAMESPACE__ . "\Doviz";
+        }
+      $get = Kur::getKur($tarih,$currency);
 
-      return new $model();
+      return $get;
    }
 
-   public static function enYakinKur($tarih = null)
-   {
-      if (empty($tarih)) {
-         return Doviz::sonKur();
-      } else {
-         if ($kur = Doviz::orderBy('tarih', 'desc')->where('tarih', '<=', date("Y-m-d", strtotime($tarih)))->first()) {
-            return $kur;
-         }
-      }
-
-      return false;
-   }
-
-   public function getTarihAttribute($value = null)
-   {
-      return empty($value) ? null : date("d.m.Y", strtotime($value));
-   }
-
-   public function setTarihAttribute($value = null)
-   {
-      $this->attributes['tarih'] = empty($value) ? null : date("Y-m-d", strtotime($value));
-   }
-
-   public function setDolarAttribute($value = null)
-   {
-      $this->attributes["dolar"] = (float) $value;
-   }
-
-   public function setEuroAttribute($value = null)
-   {
-      $this->attributes["euro"] = (float) $value;
-   }
-
-   public function setPariteAttribute($value = null)
-   {
-      $this->attributes["parite"] = empty($value) ? $this->attributes["euro"] / $this->attributes["dolar"] : (float) $value;
-   }
 
 }

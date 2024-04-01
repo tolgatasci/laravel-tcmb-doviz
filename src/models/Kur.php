@@ -8,11 +8,41 @@ class Kur{
         // https://www.tcmb.gov.tr/kurlar/202403/20032024.xml
         // https://www.tcmb.gov.tr/kurlar/Ym/dmY.xml
 
-        $content = @file_get_contents("http://www.tcmb.gov.tr/kurlar/".date("Ym", strtotime($tarih))."/".date("dmY", strtotime($tarih)).".xml");
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://www.tcmb.gov.tr/kurlar/".date("Ym", strtotime($tarih))."/".date("dmY", strtotime($tarih)).".xml");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        $content = curl_exec($ch);
+        curl_close($ch);
 
-        while(!$content){
-                $tarih = date("Y-m-d", strtotime("-1 day", strtotime($tarih)));
-                $content = file_get_contents("http://www.tcmb.gov.tr/kurlar/".date("Ym", strtotime($tarih))."/".date("dmY", strtotime($tarih)).".xml");
+
+
+        $infos = curl_getinfo($ch);
+        $info = $infos["http_code"];
+        $i=0;
+        while($info != 200){
+            $tarih = date("Y-m-d", strtotime("-1 day", strtotime($tarih)));
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://www.tcmb.gov.tr/kurlar/".date("Ym", strtotime($tarih))."/".date("dmY", strtotime($tarih)).".xml");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
+
+            //max execute time
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+
+            $infos = curl_getinfo($ch);
+            $info = $infos["http_code"];
+
+            $content = curl_exec($ch);
+            curl_close($ch);
+            if($i==5){
+                break;
+            }
+            $i++;
         }
 
 

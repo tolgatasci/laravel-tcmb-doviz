@@ -10,7 +10,13 @@ class Kur{
         $istenilen_tarih = $tarih;
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://www.tcmb.gov.tr/kurlar/".date("Ym", strtotime($tarih))."/".date("dmY", strtotime($tarih)).".xml");
+        if(date("Y-m-d", strtotime($tarih)) == date("Y-m-d")){
+            $x_url = "https://www.tcmb.gov.tr/kurlar/today.xml";
+        }else{
+            $x_url ="https://www.tcmb.gov.tr/kurlar/".date("Ym", strtotime($tarih))."/".date("dmY", strtotime($tarih)).".xml";
+        }
+
+        curl_setopt($ch, CURLOPT_URL, $x_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -33,6 +39,9 @@ class Kur{
 
         $i=0;
         while(true){
+            if(preg_match('/BanknoteSelling/i', $content)){
+                break;
+            }
             $tarih = date("Y-m-d", strtotime("-1 day", strtotime($tarih)));
 
             $ch = curl_init();

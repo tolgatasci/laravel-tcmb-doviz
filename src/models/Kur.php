@@ -7,13 +7,22 @@ class Kur{
     static function getKur($tarih = null,$currency = null){
         // https://www.tcmb.gov.tr/kurlar/202403/20032024.xml
         // https://www.tcmb.gov.tr/kurlar/Ym/dmY.xml
+        $istenilen_tarih = clone $tarih;
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "https://www.tcmb.gov.tr/kurlar/".date("Ym", strtotime($tarih))."/".date("dmY", strtotime($tarih)).".xml");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
         curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Host: www.tcmb.gov.tr',
+            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0',
+            'Upgrade-Insecure-Requests: 1',
+        ]);
+
         $content = curl_exec($ch);
         curl_close($ch);
 
@@ -21,30 +30,39 @@ class Kur{
 
         $infos = curl_getinfo($ch);
         $info = $infos["http_code"];
+
         $i=0;
         while($info != 200){
             $tarih = date("Y-m-d", strtotime("-1 day", strtotime($tarih)));
 
             $ch = curl_init();
+
             curl_setopt($ch, CURLOPT_URL, "https://www.tcmb.gov.tr/kurlar/".date("Ym", strtotime($tarih))."/".date("dmY", strtotime($tarih)).".xml");
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
-
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
             //max execute time
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
             curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Host: www.tcmb.gov.tr',
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0',
+                'Upgrade-Insecure-Requests: 1',
+            ]);
 
             $infos = curl_getinfo($ch);
             $info = $infos["http_code"];
 
             $content = curl_exec($ch);
+            if(preg_match('/BanknoteSelling/i', $content)){
+                break;
+            }
             curl_close($ch);
             if($i==5){
                 break;
             }
             $i++;
         }
-
 
         $xml = simplexml_load_string($content);
         $json = json_encode($xml);
@@ -53,7 +71,7 @@ class Kur{
 
 
 
-        $parse['request_date'] = date("Y-m-d", strtotime($tarih));
+        $parse['request_date'] = date("Y-m-d", strtotime($istenilen_tarih));
 
         $x = Kur::insertKur($parse,$currency);
 
@@ -65,26 +83,28 @@ class Kur{
         $tarih = $data["request_date"];
         unset($data["request_date"]);
         try{
-        $kularim = [];
-        foreach($data as $kex => $val){
-            $doviz = Doviz::where('date_', $tarih)->where('code',$val["CurrencyCode"])->first();
+            $kularim = [];
+            foreach($data as $kex => $val){
+                $doviz = Doviz::where('date_', $tarih)->where('code',$val["CurrencyCode"])->first();
 
-            if(!empty($doviz)){
+                if(!empty($doviz)){
 
-                $kularim[$kex] = $doviz->toArray();
+                    $kularim[$kex] = $doviz->toArray();
 
-                continue;
+                    continue;
+                }
+
+                $kur = new Doviz();
+                $kur->name = $val["CurrencyName"];
+                $kur->code = $val["CurrencyCode"];
+                $kur->ForexBuying = $val["ForexBuying"];
+                $kur->ForexSelling = $val["ForexSelling"];
+                $kur->date_ = $tarih;
+                $kur->save();
+
+
+                $kularim[$kex] = $kur;
             }
-
-            $kur = new Doviz();
-            $kur->name = $val["CurrencyName"];
-            $kur->code = $val["CurrencyCode"];
-            $kur->BanknoteBuying = $val["BanknoteBuying"];
-            $kur->BanknoteSelling = $val["BanknoteSelling"];
-            $kur->date_ = $tarih;
-            $kur->save();
-            $kularim[$kex] = $kur;
-        }
 
         }catch(\Exception $e){
 
@@ -104,8 +124,8 @@ class Kur{
                 "CurrencyName" => $val["CurrencyName"],
                 "CurrencyCode" => $val["@attributes"]["CurrencyCode"],
                 "Tarih" => $array["@attributes"]["Tarih"],
-                "BanknoteBuying" => $val["BanknoteBuying"],
-                "BanknoteSelling" => $val["BanknoteSelling"]
+                "ForexBuying" => $val["ForexBuying"],
+                "ForexSelling" => $val["ForexSelling"]
             ];
 
         }

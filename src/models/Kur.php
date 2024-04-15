@@ -7,7 +7,7 @@ class Kur{
     static function getKur($tarih = null,$currency = null){
         // https://www.tcmb.gov.tr/kurlar/202403/20032024.xml
         // https://www.tcmb.gov.tr/kurlar/Ym/dmY.xml
-        $istenilen_tarih = clone $tarih;
+        $istenilen_tarih = $tarih;
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "https://www.tcmb.gov.tr/kurlar/".date("Ym", strtotime($tarih))."/".date("dmY", strtotime($tarih)).".xml");
@@ -32,7 +32,7 @@ class Kur{
         $info = $infos["http_code"];
 
         $i=0;
-        while($info != 200){
+        while(true){
             $tarih = date("Y-m-d", strtotime("-1 day", strtotime($tarih)));
 
             $ch = curl_init();
@@ -58,7 +58,7 @@ class Kur{
                 break;
             }
             curl_close($ch);
-            if($i==5){
+            if($i==15){
                 break;
             }
             $i++;

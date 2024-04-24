@@ -21,6 +21,7 @@ class CreateDoviz extends Migration {
          $table->decimal('BanknoteBuying', 10, 6);
          $table->decimal('BanknoteSelling', 10, 6);
 	 $table->date('date_')->index();
+	 $table->date('orginal_date')->index();     
          $table->timestamps();
       });
    }

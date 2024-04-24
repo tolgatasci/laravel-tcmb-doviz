@@ -109,6 +109,7 @@ class Kur{
                 $kur->ForexBuying = $val["ForexBuying"];
                 $kur->ForexSelling = $val["ForexSelling"];
                 $kur->date_ = $tarih;
+                $kur->orginal_date = date('Y-m-d', strtotime($val['Tarih']));
                 $kur->save();
 
 
